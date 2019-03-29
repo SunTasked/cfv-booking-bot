@@ -1,0 +1,10 @@
+{
+    "key": "YourApiKey",
+    "users": [
+        {
+            "username" : "user.name@dom.ain",
+            "password" : "P4ssW0rD",
+            "gsheetId" : "googleSheetId"
+        }
+    ]
+}
