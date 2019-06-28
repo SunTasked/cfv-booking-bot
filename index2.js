@@ -1,5 +1,5 @@
 const axios = require('axios');
-const moment = require('moment');
+const cfSessionUtils = require('./src/cf-session-utils');
 
 
 let headers = {
@@ -7,23 +7,34 @@ let headers = {
     'Host': 'members.pushpress.com',
     'Referer': 'https://members.pushpress.com/login/auth',
     'Origin': 'https://members.pushpress.com',
-    //'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
     'X-Requested-With': 'XMLHttpRequest'
 }
 
-let body = "username=guillaume.kheng%40gmail.com&client_id=???&password=???";
+const buildAuthBody = function(user)
+{
+    let body = "username=" + user.username;
+    body += "&client_id=" + user.pushpressId;
+    body += "&password=" + user.password;
+    return body;
+}
 
-console.log(moment().dayOfYear())
-
-async function run() {
-    let res = await axios.post('https://members.pushpress.com/login/auth', body, { headers, withCredentials : true });
-    //console.log(res.headers['set-cookie'][0]);
+async function bookSessions(userConf) {
+    console.log(buildAuthBody(userConf.user));
+    let res = await axios.post('https://members.pushpress.com/login/auth', buildAuthBody(userConf.user), { headers, withCredentials: true });
     let headers2 = {
         Cookie: res.headers['set-cookie'][0]
     };
+    let res2 = await axios.get('https://cfv.members.pushpress.com/schedule/index/179/2019/', { headers: headers2 });
+    console.log(res2.status);
+}
 
-    let res2 = await axios.get('https://cfv.members.pushpress.com/schedule/index/108/2019/', { headers : headers2 });
-    console.log(res2.data);
+async function run() {
+    let bookingList = await cfSessionUtils.getBookableSessions();
+    bookingList.forEach(userConf => {
+        console.log(userConf.user);
+        console.log(userConf.cfSessionList);
+        bookSessions(userConf)
+    });
 }
 
 run();
